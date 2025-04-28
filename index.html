@@ -1,0 +1,65 @@
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workout Logger</title>
+
+    <!-- Link to your CSS file -->
+    <link rel="stylesheet" href="styles.css">
+
+    <!-- (Later) Link to manifest.json for PWA -->
+    <link rel="manifest" href="manifest.json">
+
+    <!-- Theme color for mobile browsers -->
+    <meta name="theme-color" content="#2E8B57">
+</head>
+
+<header>
+    <h1>🏋️ Workout Logger</h1>
+
+
+        
+    
+        <nav id="main-nav">
+            <button onclick="goToAllWorkouts()">View All Workouts</button>
+            <button onclick="goToPRs()">View PRs</button>
+        </nav>
+    
+    
+</header>
+
+<section id="new-workout">
+    <h2>New Workout</h2>
+
+    <form id="exercise-form">
+        <label for="workout-date">Date:</label>
+        <input type="date" id="workout-date" required>
+
+        <label for="exercise-name">Exercise:</label>
+        <input type="text" id="exercise-name" placeholder="Exercise Name" required>
+
+        <label for="reps">Reps:</label>
+        <input type="number" id="reps" placeholder="Number of Reps" required>
+
+        <label for="weight">Weight (kg):</label>
+        <input type="number" id="weight" placeholder="Weight" required>
+
+        <button type="button" onclick="addExercise()">Add Exercise</button>
+    </form>
+
+    <div id="exercise-list">
+        <h3>Exercises Added:</h3>
+        <ul id="exercise-items">
+            <!-- Exercises will show up here -->
+        </ul>
+    </div>
+
+    <button id="save-workout" onclick="saveWorkout()">Save Workout</button>
+</section>
+
+<!-- 🎯 NEW SECTION: Recent Workouts -->
+<section id="recent-workouts">
+    <h2>Recent Workouts</h2>
+    <ul id="recent-workout-list">
+        <!-- Saved workouts will be loaded and displayed here -->
+    </ul>
+</section>
