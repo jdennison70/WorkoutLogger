@@ -97,3 +97,24 @@ h2, h3 {
     background-color: #2E8B57;
     color: #ffffff;
 }
+.recent-workout-button {
+    padding: 6px 12px;
+    font-size: 0.9em;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    min-width: 80px; /* Makes them equal width */
+    text-align: center;
+    margin-left: 10px;
+}
+
+/* Specific colors */
+button.view-btn {
+    background-color: #2E8B57;
+    color: white;
+}
+
+button.delete-btn {
+    background-color: #f94b4b;
+    color: white;
+}
