@@ -118,3 +118,44 @@ button.delete-btn {
     background-color: #f94b4b;
     color: white;
 }
+
+  
+  
+  
+  .page-title {
+    font-size: 1.8em;
+    margin: 0;
+    line-height: 1;
+    padding-top: 4px; /* 🔧 fine-tune as needed */
+  }
+  
+  .back-button,
+.left-side,
+.import-controls {
+  margin-left: 10px; /* use same left margin for all left-aligned items */
+}
+
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin-bottom: 10px;
+}
+
+.left-side {
+  position: absolute;
+  left: 10px; /* aligns with .back-button and .import-controls */
+}
+
+.center-title {
+  margin: 0;
+  font-size: 1.8em;
+  text-align: center;
+}
+
+.import-controls {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}

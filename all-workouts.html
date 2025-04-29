@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>All Workouts</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    
+    
+   
+    <!-- Back button -->
+    <div class="back-button">
+      <button onclick="window.location.href='index.html'">⬅ Back</button>
+    </div>
+    
+    <!-- Download + Title -->
+    <div class="top-bar">
+      <div class="left-side">
+        <button onclick="downloadWorkoutData()">⬇ Download</button>
+      </div>
+    
+      <h1 class="center-title">📋 All Workouts</h1>
+    </div>
+    
+    <!-- Import controls -->
+    <div class="import-controls">
+      <input type="file" id="import-file" accept=".json">
+      <button onclick="importWorkoutData()">📂 Import</button>
+    </div>
+  
+  
+    <main>
+        <section id="all-workouts">
+            <ul id="all-workout-list"></ul>
+        </section>
+    </main>
+
+    <script src="app.js"></script>
+    <script>
+        // Load workouts when page opens
+        document.addEventListener("DOMContentLoaded", () => {
+            loadAllWorkouts();
+        });
+
+        function goToHome() {
+            window.location.href = "index.html";
+        }
+    </script>
+    
+
+</body>
+</html>

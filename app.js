@@ -145,9 +145,93 @@ function updateRecentWorkouts() {
         list.appendChild(li);
     });
 }
+function loadAllWorkouts() {
+
+    console.log("✅ loadAllWorkouts() called");
+
+    const list = document.getElementById("all-workout-list");
+    list.innerHTML = "";
+
+    let workouts = JSON.parse(localStorage.getItem("workouts")) || [];
+
+// Sort by date descending (newest first)
+workouts.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    workouts.forEach(workout => {
+        const li = document.createElement("li");
+
+        const dateHeading = document.createElement("h3");
+        dateHeading.textContent = `📅 ${workout.date}`;
+        li.appendChild(dateHeading);
+
+        workout.exercises.forEach(ex => {
+            const p = document.createElement("p");
+            p.textContent = `${ex.exercise} – ${ex.reps} reps @ ${ex.weight}kg`;
+            li.appendChild(p);
+        });
+
+        list.appendChild(li);
+    });
+}
+function downloadWorkoutData() {
+    const data = localStorage.getItem("workouts");
+
+    if (!data) {
+        alert("No workouts to download.");
+        return;
+    }
+
+    const blob = new Blob([data], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "workouts.json";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+function importWorkoutData() {
+    const fileInput = document.getElementById("import-file");
+    const file = fileInput.files[0];
+
+    if (!file) {
+        alert("Please select a file to import.");
+        return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = function (event) {
+        try {
+            const data = JSON.parse(event.target.result);
+
+            if (!Array.isArray(data)) {
+                alert("Invalid file format. Expected an array of workouts.");
+                return;
+            }
+
+            localStorage.setItem("workouts", JSON.stringify(data));
+            alert("✅ Workouts imported successfully!");
+            loadAllWorkouts(); // refresh display if needed
+
+        } catch (e) {
+            alert("❌ Failed to import: Invalid JSON file.");
+            console.error(e);
+        }
+    };
+
+    reader.readAsText(file);
+}
+
+
 
 
 
 document.addEventListener("DOMContentLoaded", () => {
-    updateRecentWorkouts();
+    if (document.getElementById("recent-workout-list")) {
+        updateRecentWorkouts();
+    }
 });
+
