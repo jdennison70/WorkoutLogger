@@ -101,7 +101,8 @@ function updateRecentWorkouts() {
 
         // Workout summary
         const textSpan = document.createElement("span");
-        textSpan.textContent = `📅 ${workout.date} – ${workout.exercises.length} exercises`;
+        textSpan.textContent = `📅 ${formatDateDisplay(workout.date)} – ${workout.exercises.length} exercises`;
+
 
         // View button
         const viewBtn = document.createElement("button");
@@ -162,7 +163,7 @@ function loadAllWorkouts() {
             const li = document.createElement("li");
     
             const dateHeading = document.createElement("h3");
-            dateHeading.textContent = `📅 ${workout.date}`;
+            dateHeading.textContent = `📅 ${formatDateDisplay(workout.date)}`;
             li.appendChild(dateHeading);
     
             workout.exercises.forEach(ex => {
@@ -255,6 +256,14 @@ function importWorkoutData() {
 
 
 document.addEventListener("DOMContentLoaded", () => {
+    // Set today's date in workout form
+    const dateInput = document.getElementById("workout-date");
+    if (dateInput) {
+        const today = new Date().toISOString().split("T")[0];
+        dateInput.value = today;
+    }
+
+    // Load recent workouts if element is present
     if (document.getElementById("recent-workout-list")) {
         updateRecentWorkouts();
     }
@@ -284,8 +293,12 @@ function loadPersonalRecords() {
     sortedNames.forEach(name => {
         const record = prs[name];
         const li = document.createElement("li");
-        li.textContent = `${name}: ${record.weight}kg for ${record.reps} reps on ${record.date}`;
+        li.textContent = `${name}: ${record.weight}kg for ${record.reps} reps on ${formatDateDisplay(record.date)}`;
         prList.appendChild(li);
     });
 }
 
+function formatDateDisplay(isoDate) {
+    const [year, month, day] = isoDate.split("-");
+    return `${day}-${month}-${year}`;
+}
