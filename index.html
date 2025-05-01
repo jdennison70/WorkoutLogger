@@ -65,3 +65,9 @@
         <!-- Saved workouts will be loaded and displayed here -->
     </ul>
 </section>
+<script>if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("sw.js").then(() =>
+      console.log("Service Worker Registered")
+    );
+  }
+  </script>
