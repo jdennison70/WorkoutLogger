@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Personal Records</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="row">
+    <button onclick="window.location.href='index.html'">⬅ Back</button>
+  </div>
+
+  <h1>🏆 Personal Records</h1>
+
+  <section id="pr-section">
+    <ul id="pr-list"></ul>
+  </section>
+
+  <script src="app.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      loadPersonalRecords();
+    });
+  </script>
+</body>
+</html>

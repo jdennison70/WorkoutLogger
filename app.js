@@ -234,4 +234,33 @@ document.addEventListener("DOMContentLoaded", () => {
         updateRecentWorkouts();
     }
 });
+function loadPersonalRecords() {
+    const prList = document.getElementById("pr-list");
+    prList.innerHTML = "";
+
+    const workouts = JSON.parse(localStorage.getItem("workouts")) || [];
+    const prs = {};
+
+    workouts.forEach(workout => {
+        workout.exercises.forEach(ex => {
+            const name = ex.exercise;
+            if (!prs[name] || ex.weight > prs[name].weight) {
+                prs[name] = {
+                    weight: ex.weight,
+                    reps: ex.reps,
+                    date: workout.date
+                };
+            }
+        });
+    });
+
+    const sortedNames = Object.keys(prs).sort();
+
+    sortedNames.forEach(name => {
+        const record = prs[name];
+        const li = document.createElement("li");
+        li.textContent = `${name}: ${record.weight}kg for ${record.reps} reps on ${record.date}`;
+        prList.appendChild(li);
+    });
+}
 
