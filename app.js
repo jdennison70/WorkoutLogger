@@ -147,32 +147,57 @@ function updateRecentWorkouts() {
 }
 function loadAllWorkouts() {
 
-    console.log("✅ loadAllWorkouts() called");
-
-    const list = document.getElementById("all-workout-list");
-    list.innerHTML = "";
-
-    let workouts = JSON.parse(localStorage.getItem("workouts")) || [];
-
-// Sort by date descending (newest first)
-workouts.sort((a, b) => new Date(b.date) - new Date(a.date));
-
-    workouts.forEach(workout => {
-        const li = document.createElement("li");
-
-        const dateHeading = document.createElement("h3");
-        dateHeading.textContent = `📅 ${workout.date}`;
-        li.appendChild(dateHeading);
-
-        workout.exercises.forEach(ex => {
-            const p = document.createElement("p");
-            p.textContent = `${ex.exercise} – ${ex.reps} reps @ ${ex.weight}kg`;
-            li.appendChild(p);
+    
+        console.log("✅ loadAllWorkouts() called");
+    
+        const list = document.getElementById("all-workout-list");
+        list.innerHTML = "";
+    
+        let workouts = JSON.parse(localStorage.getItem("workouts")) || [];
+    
+        // Sort by date descending (newest first)
+        workouts.sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+        workouts.forEach((workout, index) => {
+            const li = document.createElement("li");
+    
+            const dateHeading = document.createElement("h3");
+            dateHeading.textContent = `📅 ${workout.date}`;
+            li.appendChild(dateHeading);
+    
+            workout.exercises.forEach(ex => {
+                const p = document.createElement("p");
+                p.textContent = `${ex.exercise} – ${ex.reps} reps @ ${ex.weight}kg`;
+                li.appendChild(p);
+            });
+    
+            // 🔴 Add Delete Button
+            const deleteBtn = document.createElement("button");
+            deleteBtn.textContent = "🗑 Delete Workout";
+            deleteBtn.style.marginTop = "8px";
+            deleteBtn.style.backgroundColor = "#f94b4b";
+            deleteBtn.style.color = "white";
+            deleteBtn.style.border = "none";
+            deleteBtn.style.borderRadius = "5px";
+            deleteBtn.style.padding = "6px 12px";
+            deleteBtn.style.cursor = "pointer";
+    
+            // Actual index is from reverse-sorted array
+            const actualIndex = workouts.length - 1 - index;
+    
+            deleteBtn.onclick = () => {
+                if (!confirm("Are you sure you want to delete this workout?")) return;
+                workouts.splice(actualIndex, 1);
+                localStorage.setItem("workouts", JSON.stringify(workouts));
+                loadAllWorkouts(); // Refresh the list
+            };
+    
+            li.appendChild(deleteBtn);
+            list.appendChild(li);
         });
+    }
+    
 
-        list.appendChild(li);
-    });
-}
 function downloadWorkoutData() {
     const data = localStorage.getItem("workouts");
 
