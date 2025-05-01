@@ -129,33 +129,74 @@ button.delete-btn {
     padding-top: 4px; /* 🔧 fine-tune as needed */
   }
   
-  .back-button,
-.left-side,
-.import-controls {
-  margin-left: 10px; /* use same left margin for all left-aligned items */
-}
-
-.top-bar {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  margin-bottom: 10px;
-}
-
-.left-side {
-  position: absolute;
-  left: 10px; /* aligns with .back-button and .import-controls */
-}
-
-.center-title {
-  margin: 0;
-  font-size: 1.8em;
-  text-align: center;
-}
-
-.import-controls {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
-}
+  /* Reusable row spacing */
+.row {
+    margin-left: 20px;
+    margin-bottom: 10px;
+  }
+  
+  /* Download + Title layout */
+  .top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    margin-bottom: 10px;
+    min-height: 50px;
+  }
+  
+  /* Download button alignment */
+  .left-group {
+    position: absolute;
+    left: 20px;
+  }
+  
+  /* Centered title */
+  .page-title {
+    margin: 0;
+    font-size: 1.8em;
+    text-align: center;
+  }
+  
+  /* Import buttons */
+  .import-row {
+    display: flex;
+    justify-content: flex-start; /* force to left */
+    margin-left: 20px;
+  }
+  
+  /* Optional: responsive tweaks for small screens */
+  @media (max-width: 600px) {
+    .top-bar {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  
+    .left-group {
+      position: static;
+      margin-bottom: 10px;
+    }
+    
+  
+    .page-title {
+      text-align: left;
+      margin-left: 20px;
+    }
+  }
+  
+  #import-file {
+    margin: 0;  /* Remove any default spacing */
+  }
+  .import-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  
+  #import-file {
+    width: auto;
+    max-width: 160px; /* reduce max width */
+    padding: 4px;
+    font-size: 0.9em;
+  }
+  

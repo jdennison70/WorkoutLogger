@@ -9,25 +9,28 @@
     
     
    
-    <!-- Back button -->
-    <div class="back-button">
-      <button onclick="window.location.href='index.html'">⬅ Back</button>
-    </div>
-    
-    <!-- Download + Title -->
-    <div class="top-bar">
-      <div class="left-side">
-        <button onclick="downloadWorkoutData()">⬇ Download</button>
-      </div>
-    
-      <h1 class="center-title">📋 All Workouts</h1>
-    </div>
-    
-    <!-- Import controls -->
-    <div class="import-controls">
-      <input type="file" id="import-file" accept=".json">
-      <button onclick="importWorkoutData()">📂 Import</button>
-    </div>
+   <!-- Back button -->
+<div class="row">
+  <button onclick="window.location.href='index.html'">⬅ Back</button>
+</div>
+
+<!-- Download + Title row -->
+<div class="top-bar">
+  <div class="left-group">
+    <button onclick="downloadWorkoutData()">⬇ Download</button>
+  </div>
+
+  <h1 class="page-title">📋 All Workouts</h1>
+</div>
+
+<div class="row import-row">
+  <div class="import-group">
+    <input type="file" id="import-file" accept=".json">
+    <button onclick="importWorkoutData()">📂 Import</button>
+  </div>
+</div>
+
+
   
   
     <main>
