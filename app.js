@@ -15,6 +15,7 @@ function addExercise() {
         reps: parseInt(reps),
         weight: parseFloat(weight)
     });
+    localStorage.setItem("inProgressExercises", JSON.stringify(currentExercises));
 
     // Update the visible list
     updateExerciseList();
@@ -78,6 +79,10 @@ function saveWorkout() {
 
     // Save updated list back to localStorage
     localStorage.setItem("workouts", JSON.stringify(workouts));
+
+    localStorage.removeItem("inProgressExercises");
+    localStorage.removeItem("inProgressDate");
+
 
     // Clear form + reset state
     document.getElementById("workout-date").value = "";
@@ -256,17 +261,49 @@ function importWorkoutData() {
 
 
 document.addEventListener("DOMContentLoaded", () => {
-    // Set today's date in workout form
     const dateInput = document.getElementById("workout-date");
-    if (dateInput) {
+
+if (dateInput) {
+    // Try to restore the saved in-progress date
+    const savedDate = localStorage.getItem("inProgressDate");
+
+    if (savedDate) {
+        dateInput.value = savedDate;
+    } else {
+        // If no saved date, set to today's date
         const today = new Date().toISOString().split("T")[0];
         dateInput.value = today;
     }
+
+    // Save changes to date field
+    dateInput.addEventListener("input", () => {
+        localStorage.setItem("inProgressDate", dateInput.value);
+    });
+    
+}
+
 
     // Load recent workouts if element is present
     if (document.getElementById("recent-workout-list")) {
         updateRecentWorkouts();
     }
+
+    const savedExercises = JSON.parse(localStorage.getItem("inProgressExercises"));
+if (Array.isArray(savedExercises)) {
+    currentExercises = savedExercises;
+    updateExerciseList();
+}
+
+const savedDate = localStorage.getItem("inProgressDate");
+if (savedDate) {
+    const dateInput = document.getElementById("workout-date");
+    if (dateInput) dateInput.value = savedDate;
+}
+const versionEl = document.getElementById("version-text");
+if (versionEl) versionEl.textContent = "v1.0.1";
+    
+
+
 });
 function loadPersonalRecords() {
     const prList = document.getElementById("pr-list");
@@ -302,3 +339,18 @@ function formatDateDisplay(isoDate) {
     const [year, month, day] = isoDate.split("-");
     return `${day}-${month}-${year}`;
 }
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').then(reg => {
+      reg.onupdatefound = () => {
+        const newWorker = reg.installing;
+        newWorker.onstatechange = () => {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            if (confirm("New version available! Refresh now?")) {
+              window.location.reload();
+            }
+          }
+        };
+      };
+    });
+  }
+  
