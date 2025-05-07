@@ -341,16 +341,19 @@ function formatDateDisplay(isoDate) {
 }
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js').then(reg => {
-      reg.onupdatefound = () => {
+      reg.addEventListener("updatefound", () => {
         const newWorker = reg.installing;
-        newWorker.onstatechange = () => {
-          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-            if (confirm("New version available! Refresh now?")) {
-              window.location.reload();
-            }
+        newWorker.addEventListener("statechange", () => {
+          if (
+            newWorker.state === "installed" &&
+            navigator.serviceWorker.controller
+          ) {
+            // No prompt — just auto-reload the app with the update
+            window.location.reload();
           }
-        };
-      };
+        });
+      });
     });
   }
+  
   
