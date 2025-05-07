@@ -341,19 +341,20 @@ function formatDateDisplay(isoDate) {
 }
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js').then(reg => {
-      reg.addEventListener("updatefound", () => {
+      reg.addEventListener('updatefound', () => {
         const newWorker = reg.installing;
-        newWorker.addEventListener("statechange", () => {
+        newWorker.addEventListener('statechange', () => {
           if (
-            newWorker.state === "installed" &&
+            newWorker.state === 'installed' &&
             navigator.serviceWorker.controller
           ) {
-            // No prompt — just auto-reload the app with the update
+            // Auto-refresh for installed PWA
             window.location.reload();
           }
         });
       });
     });
   }
+  
   
   
