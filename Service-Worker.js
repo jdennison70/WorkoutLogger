@@ -1,4 +1,4 @@
-const CACHE_NAME = "workout-cache-v1.01";
+const CACHE_NAME = "workout-cache-v1.0.1.2";
 const urlsToCache = ["index.html", "styles.css", "app.js"];
 
 self.addEventListener("install", event => {
