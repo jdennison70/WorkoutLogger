@@ -43,10 +43,18 @@ function updateExerciseList() {
         deleteBtn.style.borderRadius = "4px";
         deleteBtn.style.cursor = "pointer";
         deleteBtn.onclick = () => {
-            // Remove from array
             currentExercises.splice(index, 1);
-            updateExerciseList(); // Refresh list
+        
+            // 🛠️ Update localStorage with new state
+            if (currentExercises.length > 0) {
+                localStorage.setItem("inProgressExercises", JSON.stringify(currentExercises));
+            } else {
+                localStorage.removeItem("inProgressExercises");
+            }
+        
+            updateExerciseList();
         };
+        
 
         li.appendChild(deleteBtn);
         list.appendChild(li);
@@ -192,16 +200,28 @@ function loadAllWorkouts() {
             const actualIndex = workouts.length - 1 - index;
     
             deleteBtn.onclick = () => {
-                if (!confirm("Are you sure you want to delete this workout?")) return;
-                workouts.splice(actualIndex, 1);
-                localStorage.setItem("workouts", JSON.stringify(workouts));
-                loadAllWorkouts(); // Refresh the list
+                currentExercises.splice(index, 1);
+                // 🔧 Update autosaved data
+                if (currentExercises.length > 0) {
+                    localStorage.setItem("inProgressExercises", JSON.stringify(currentExercises));
+                } else {
+                    localStorage.removeItem("inProgressExercises");
+                }
+                updateExerciseList(); // refresh list
             };
+            
     
             li.appendChild(deleteBtn);
             list.appendChild(li);
+           
+
         });
-    }
+        
+    
+    
+}
+
+
     
 
 function downloadWorkoutData() {
