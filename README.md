@@ -1,4 +1,4 @@
-Version 1.0.1.1
+Version 1.0.1.3
 🏋️ Workout Logger
 A clean, installable Progressive Web App (PWA) for logging workouts, tracking personal records, and managing your fitness progress — built with vanilla HTML, CSS, and JavaScript.
 
@@ -7,7 +7,7 @@ A clean, installable Progressive Web App (PWA) for logging workouts, tracking pe
 
 📆 Automatically fills in today's date
 
-🧾 View recent workouts and personal records (PRs)
+🧾 View recent workouts and personal records and expected 1 rep max is calculated
 
 🗑 Delete individual workouts
 
