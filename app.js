@@ -335,13 +335,15 @@ function loadPersonalRecords() {
     workouts.forEach(workout => {
         workout.exercises.forEach(ex => {
             const name = ex.exercise;
-            if (!prs[name] || ex.weight > prs[name].weight) {
-                prs[name] = {
-                    weight: ex.weight,
-                    reps: ex.reps,
-                    date: workout.date
-                };
-            }
+            const estimated1RM = ex.weight * (1 + ex.reps / 30);
+if (!prs[name] || estimated1RM > prs[name].estimated1RM) {
+    prs[name] = {
+        weight: ex.weight,
+        reps: ex.reps,
+        date: workout.date,
+        estimated1RM: estimated1RM
+    };
+}
         });
     });
 
@@ -350,7 +352,7 @@ function loadPersonalRecords() {
     sortedNames.forEach(name => {
         const record = prs[name];
         const li = document.createElement("li");
-        li.textContent = `${name}: ${record.weight}kg for ${record.reps} reps on ${formatDateDisplay(record.date)}`;
+        li.textContent = `${name}: ${record.weight}kg for ${record.reps} reps on ${formatDateDisplay(record.date)} (Est. 1RM: ${record.estimated1RM.toFixed(1)}kg)`;
         prList.appendChild(li);
     });
 }
