@@ -98,7 +98,16 @@ function saveWorkout() {
     updateExerciseList();
 
     alert("Workout saved successfully!");
-
+ // ✅ Sync to Firebase
+  db.collection("workouts").add({
+    date: workout.date,
+    exercises: workout.exercises,
+    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+  }).then(() => {
+    console.log("✅ Workout uploaded to Firebase");
+  }).catch((error) => {
+    console.error("❌ Firebase upload failed:", error);
+  });
     //update recent workouts list
     updateRecentWorkouts();
 }

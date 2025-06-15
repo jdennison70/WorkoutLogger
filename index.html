@@ -1,6 +1,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <!-- Firebase v8 Global SDK -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+  <script>
+    // ✅ Firebase Config (update this if your project config changes)
+    var firebaseConfig = {
+      apiKey: "AIzaSyA_hAL4II0LMcZBNlbd0qovIm7SjvwOkSo",
+      authDomain: "workoutloggercloud.firebaseapp.com",
+      projectId: "workoutloggercloud",
+      storageBucket: "workoutloggercloud.appspot.com",
+      messagingSenderId: "828952893672",
+      appId: "1:828952893672:web:71110b3a0436d319f7115d"
+    };
+    firebase.initializeApp(firebaseConfig);
+    var db = firebase.firestore(); // ✅ used in app.js
+  </script>
+
     <title>Workout Logger</title>
 
     <!-- Link to your CSS file -->
