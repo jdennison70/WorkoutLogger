@@ -331,6 +331,7 @@ if (savedDate) {
 const versionEl = document.getElementById("version-text");
 if (versionEl) versionEl.textContent = "v1.0.1";
     
+syncLocalWorkoutsToFirebase();
 
 
 });
@@ -369,7 +370,40 @@ if (!prs[name] || estimated1RM > prs[name].estimated1RM) {
 function formatDateDisplay(isoDate) {
     const [year, month, day] = isoDate.split("-");
     return `${day}-${month}-${year}`;
+
 }
+async function syncLocalWorkoutsToFirebase() {
+  const localWorkouts = JSON.parse(localStorage.getItem("workouts")) || [];
+
+  if (localWorkouts.length === 0) return;
+
+  try {
+    // ✅ Fetch all workouts from Firebase
+    const snapshot = await db.collection("workouts").get();
+    const remoteWorkouts = snapshot.docs.map(doc => doc.data());
+
+    for (const local of localWorkouts) {
+      const alreadyExists = remoteWorkouts.some(remote =>
+        remote.date === local.date &&
+        JSON.stringify(remote.exercises) === JSON.stringify(local.exercises)
+      );
+
+      if (!alreadyExists) {
+        await db.collection("workouts").add({
+          date: local.date,
+          exercises: local.exercises,
+          timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        console.log(`✅ Synced workout on ${local.date}`);
+      } else {
+        console.log(`🔁 Skipped duplicate workout on ${local.date}`);
+      }
+    }
+  } catch (err) {
+    console.error("❌ Failed to sync workouts:", err);
+  }
+}
+
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js').then(reg => {
       reg.addEventListener('updatefound', () => {
