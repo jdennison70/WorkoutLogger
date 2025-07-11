@@ -1,4 +1,7 @@
+const db = firebase.firestore(); // ✅ used in app.js
+
 let currentExercises = [];
+
 function addExercise() {
     const name = document.getElementById("exercise-name").value.trim();
     const reps = document.getElementById("reps").value.trim();
@@ -276,16 +279,31 @@ function importWorkoutData() {
 
     reader.onload = function (event) {
         try {
-            const data = JSON.parse(event.target.result);
+            let data = JSON.parse(event.target.result);
 
             if (!Array.isArray(data)) {
                 alert("Invalid file format. Expected an array of workouts.");
                 return;
             }
 
+            // ✅ Add missing IDs
+            let updated = false;
+            data.forEach(workout => {
+                if (!workout.id) {
+                    workout.id = generateId();
+                    updated = true;
+                }
+            });
+
             localStorage.setItem("workouts", JSON.stringify(data));
             alert("✅ Workouts imported successfully!");
-            loadAllWorkouts(); // refresh display if needed
+
+            if (updated) {
+                console.log("🛠 Added missing IDs to imported workouts.");
+            }
+
+            loadAllWorkouts(); // refresh display
+            syncLocalWorkoutsToFirebase(); // ✅ Trigger sync after import
 
         } catch (e) {
             alert("❌ Failed to import: Invalid JSON file.");
@@ -295,6 +313,7 @@ function importWorkoutData() {
 
     reader.readAsText(file);
 }
+
 
 
 
