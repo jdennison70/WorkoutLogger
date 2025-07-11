@@ -73,44 +73,43 @@ function saveWorkout() {
         return;
     }
 
-    // Build the workout object
+    const id = generateId(); // 🔑 Create unique ID
+
     const workout = {
+        id: id,
         date: date,
         exercises: currentExercises
     };
 
-    // Get existing workouts or start with empty array
+    // Add to localStorage
     let workouts = JSON.parse(localStorage.getItem("workouts")) || [];
-
-    // Add the new workout to the list
     workouts.push(workout);
-
-    // Save updated list back to localStorage
     localStorage.setItem("workouts", JSON.stringify(workouts));
 
     localStorage.removeItem("inProgressExercises");
     localStorage.removeItem("inProgressDate");
 
-
-    // Clear form + reset state
     document.getElementById("workout-date").value = "";
     currentExercises = [];
     updateExerciseList();
-
     alert("Workout saved successfully!");
- // ✅ Sync to Firebase
-  db.collection("workouts").add({
-    date: workout.date,
-    exercises: workout.exercises,
-    timestamp: firebase.firestore.FieldValue.serverTimestamp()
-  }).then(() => {
-    console.log("✅ Workout uploaded to Firebase");
-  }).catch((error) => {
-    console.error("❌ Firebase upload failed:", error);
-  });
-    //update recent workouts list
+
+    // ✅ Upload using .doc(id).set()
+    db.collection("workouts").doc(id).set({
+        id: id,
+        date: workout.date,
+        exercises: workout.exercises,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(() => {
+        console.log("✅ Workout uploaded to Firebase with ID:", id);
+    }).catch((error) => {
+        console.error("❌ Firebase upload failed:", error);
+    });
+
     updateRecentWorkouts();
 }
+
+
 function updateRecentWorkouts() {
     const list = document.getElementById("recent-workout-list");
     list.innerHTML = "";
@@ -287,54 +286,45 @@ function importWorkoutData() {
 
 
 
-
-
 document.addEventListener("DOMContentLoaded", () => {
     const dateInput = document.getElementById("workout-date");
 
-if (dateInput) {
-    // Try to restore the saved in-progress date
-    const savedDate = localStorage.getItem("inProgressDate");
+    if (dateInput) {
+        const savedDate = localStorage.getItem("inProgressDate");
 
-    if (savedDate) {
-        dateInput.value = savedDate;
-    } else {
-        // If no saved date, set to today's date
-        const today = new Date().toISOString().split("T")[0];
-        dateInput.value = today;
+        if (savedDate) {
+            dateInput.value = savedDate;
+        } else {
+            // ✅ Set to today's date only if nothing is saved
+            const today = new Date().toISOString().split("T")[0];
+            dateInput.value = today;
+            localStorage.setItem("inProgressDate", today); // 🔄 also store it
+        }
+
+        dateInput.addEventListener("input", () => {
+            localStorage.setItem("inProgressDate", dateInput.value);
+        });
     }
 
-    // Save changes to date field
-    dateInput.addEventListener("input", () => {
-        localStorage.setItem("inProgressDate", dateInput.value);
-    });
-    
-}
+    const savedExercises = JSON.parse(localStorage.getItem("inProgressExercises"));
+    if (Array.isArray(savedExercises)) {
+        currentExercises = savedExercises;
+        updateExerciseList();
+    }
 
-
-    // Load recent workouts if element is present
     if (document.getElementById("recent-workout-list")) {
         updateRecentWorkouts();
     }
 
-    const savedExercises = JSON.parse(localStorage.getItem("inProgressExercises"));
-if (Array.isArray(savedExercises)) {
-    currentExercises = savedExercises;
-    updateExerciseList();
-}
+    const versionEl = document.getElementById("version-text");
+    if (versionEl) versionEl.textContent = "v1.0.1";
 
-const savedDate = localStorage.getItem("inProgressDate");
-if (savedDate) {
-    const dateInput = document.getElementById("workout-date");
-    if (dateInput) dateInput.value = savedDate;
-}
-const versionEl = document.getElementById("version-text");
-if (versionEl) versionEl.textContent = "v1.0.1";
-    
-syncLocalWorkoutsToFirebase();
-
-
+    syncLocalWorkoutsToFirebase();
 });
+
+
+
+
 function loadPersonalRecords() {
     const prList = document.getElementById("pr-list");
     prList.innerHTML = "";
@@ -373,36 +363,38 @@ function formatDateDisplay(isoDate) {
 
 }
 async function syncLocalWorkoutsToFirebase() {
-  const localWorkouts = JSON.parse(localStorage.getItem("workouts")) || [];
+    const localWorkouts = JSON.parse(localStorage.getItem("workouts")) || [];
+    if (localWorkouts.length === 0) return;
 
-  if (localWorkouts.length === 0) return;
+    try {
+        const snapshot = await db.collection("workouts").get();
+        const existingIds = new Set(snapshot.docs.map(doc => doc.id));
 
-  try {
-    // ✅ Fetch all workouts from Firebase
-    const snapshot = await db.collection("workouts").get();
-    const remoteWorkouts = snapshot.docs.map(doc => doc.data());
+        for (const workout of localWorkouts) {
+            // Skip workouts without IDs (legacy)
+            if (!workout.id) continue;
 
-    for (const local of localWorkouts) {
-      const alreadyExists = remoteWorkouts.some(remote =>
-        remote.date === local.date &&
-        JSON.stringify(remote.exercises) === JSON.stringify(local.exercises)
-      );
-
-      if (!alreadyExists) {
-        await db.collection("workouts").add({
-          date: local.date,
-          exercises: local.exercises,
-          timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        console.log(`✅ Synced workout on ${local.date}`);
-      } else {
-        console.log(`🔁 Skipped duplicate workout on ${local.date}`);
-      }
+            if (!existingIds.has(workout.id)) {
+                await db.collection("workouts").doc(workout.id).set({
+                    id: workout.id,
+                    date: workout.date,
+                    exercises: workout.exercises,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                console.log(`✅ Synced workout ${workout.id} (${workout.date})`);
+            } else {
+                console.log(`🔁 Skipped existing workout ${workout.id}`);
+            }
+        }
+    } catch (err) {
+        console.error("❌ Failed to sync workouts:", err);
     }
-  } catch (err) {
-    console.error("❌ Failed to sync workouts:", err);
-  }
 }
+
+function generateId() {
+  return '_' + Math.random().toString(36).substr(2, 9);
+}
+
 
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js').then(reg => {
