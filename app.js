@@ -154,11 +154,19 @@ function updateRecentWorkouts() {
         // Delete logic
         const actualIndex = workouts.length - 1 - displayIndex;
         deleteBtn.onclick = () => {
-            if (!confirm("Delete this workout?")) return;
-            workouts.splice(actualIndex, 1);
-            localStorage.setItem("workouts", JSON.stringify(workouts));
-            updateRecentWorkouts();
-        };
+    if (!confirm("Delete this workout?")) return;
+
+    const deleted = workouts.splice(actualIndex, 1)[0];
+    localStorage.setItem("workouts", JSON.stringify(workouts));
+    updateRecentWorkouts();
+
+    // 🗑️ Delete from Firebase if it has an ID
+    if (deleted?.id) {
+        db.collection("workouts").doc(deleted.id).delete()
+            .then(() => console.log(`🗑️ Deleted workout ${deleted.id} from Firebase`))
+            .catch(err => console.error(`❌ Failed to delete workout ${deleted.id}:`, err));
+    }
+};
 
         li.appendChild(textSpan);
         li.appendChild(viewBtn);
@@ -208,15 +216,19 @@ function loadAllWorkouts() {
             const actualIndex = workouts.length - 1 - index;
     
             deleteBtn.onclick = () => {
-                currentExercises.splice(index, 1);
-                // 🔧 Update autosaved data
-                if (currentExercises.length > 0) {
-                    localStorage.setItem("inProgressExercises", JSON.stringify(currentExercises));
-                } else {
-                    localStorage.removeItem("inProgressExercises");
-                }
-                updateExerciseList(); // refresh list
-            };
+    if (!confirm("Delete this workout?")) return;
+
+    const deleted = workouts.splice(index, 1)[0];
+    localStorage.setItem("workouts", JSON.stringify(workouts));
+    loadAllWorkouts();
+
+    if (deleted?.id) {
+        db.collection("workouts").doc(deleted.id).delete()
+            .then(() => console.log(`🗑️ Deleted workout ${deleted.id} from Firebase`))
+            .catch(err => console.error(`❌ Failed to delete workout ${deleted.id}:`, err));
+    }
+};
+
             
     
             li.appendChild(deleteBtn);
@@ -288,6 +300,35 @@ function importWorkoutData() {
 
 document.addEventListener("DOMContentLoaded", () => {
     const dateInput = document.getElementById("workout-date");
+    // 🛠 Auto-migrate legacy workouts that are missing an ID
+function migrateLegacyWorkoutsAddIdsOnce() {
+    if (localStorage.getItem("migratedWorkoutsWithId") === "true") {
+        return; // 🟢 Already migrated
+    }
+
+    let workouts = JSON.parse(localStorage.getItem("workouts")) || [];
+    let updated = false;
+
+    workouts.forEach(workout => {
+        if (!workout.id) {
+            workout.id = generateId();
+            updated = true;
+        }
+    });
+
+    if (updated) {
+        localStorage.setItem("workouts", JSON.stringify(workouts));
+        console.log(`🛠 Migrated ${workouts.length} workouts: added missing IDs.`);
+    } else {
+        console.log("✅ No legacy workouts to migrate.");
+    }
+
+    localStorage.setItem("migratedWorkoutsWithId", "true"); // 🔒 Mark as done
+}
+
+// 🔁 Run on load
+migrateLegacyWorkoutsAddIdsOnce();
+
 
     if (dateInput) {
         const savedDate = localStorage.getItem("inProgressDate");
