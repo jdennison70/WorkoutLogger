@@ -348,23 +348,28 @@ function migrateLegacyWorkoutsAddIdsOnce() {
 // 🔁 Run on load
 migrateLegacyWorkoutsAddIdsOnce();
 
+if (dateInput) {
+    const savedDate = localStorage.getItem("inProgressDate");
+    const today = new Date().toISOString().split("T")[0];
 
-    if (dateInput) {
-        const savedDate = localStorage.getItem("inProgressDate");
+    if (savedDate === today) {
+        dateInput.value = savedDate;
+    } else {
+        dateInput.value = today;
+        localStorage.setItem("inProgressDate", today);
 
-        if (savedDate) {
-            dateInput.value = savedDate;
-        } else {
-            // ✅ Set to today's date only if nothing is saved
-            const today = new Date().toISOString().split("T")[0];
-            dateInput.value = today;
-            localStorage.setItem("inProgressDate", today); // 🔄 also store it
-        }
-
-        dateInput.addEventListener("input", () => {
-            localStorage.setItem("inProgressDate", dateInput.value);
-        });
+        // 🧹 Optional reset if date has changed
+        localStorage.removeItem("inProgressExercises");
+        currentExercises = [];
+        updateExerciseList();
     }
+
+    dateInput.addEventListener("input", () => {
+        localStorage.setItem("inProgressDate", dateInput.value);
+    });
+}
+
+   
 
     const savedExercises = JSON.parse(localStorage.getItem("inProgressExercises"));
     if (Array.isArray(savedExercises)) {
