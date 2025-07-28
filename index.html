@@ -32,7 +32,7 @@
     <script src="app.js"></script>
 
 </head>
-<div id="version-badge">v1.0.1.4</div>
+<div id="version-badge">v1.0.2</div>
 
 <header>
     <h1>🏋️ Workout Logger</h1>
@@ -70,6 +70,12 @@
 
         <button type="button" onclick="addExercise()">Add Exercise</button>
     </form>
+    <!-- Count-Up Rest Timer UI -->
+<div id="rest-timer" style="display: none; margin-top: 15px; margin-bottom: 15px; font-weight: bold;">
+  ⏱️ Time Since Last Set: <span id="timer-countup">0</span>s
+  <button onclick="stopRestTimer()" style="margin-left: 10px; background-color: #dc3545; color: white; border: none; padding: 4px 8px; border-radius: 4px;">Stop</button>
+</div>
+
 
     <div id="exercise-list">
         <h3>Exercises Added:</h3>

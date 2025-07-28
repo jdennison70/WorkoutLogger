@@ -34,6 +34,7 @@ function addExercise() {
     document.getElementById("exercise-name").value = "";
     document.getElementById("reps").value = "";
     document.getElementById("weight").value = "";
+    startRestTimer()
 }
 
 function updateExerciseList() {
@@ -412,6 +413,26 @@ async function syncLocalWorkoutsToFirebase() {
 function generateId() {
     return '_' + Math.random().toString(36).substr(2, 9);
 }
+let restInterval;
+let elapsedTime = 0;
+
+function startRestTimer() {
+    clearInterval(restInterval); // reset any old timer
+    elapsedTime = 0;
+    document.getElementById("rest-timer").style.display = "block";
+    document.getElementById("timer-countup").textContent = elapsedTime;
+
+    restInterval = setInterval(() => {
+        elapsedTime++;
+        document.getElementById("timer-countup").textContent = elapsedTime;
+    }, 1000);
+}
+
+function stopRestTimer() {
+    clearInterval(restInterval);
+    document.getElementById("rest-timer").style.display = "none";
+}
+
 
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js').then(reg => {
