@@ -1,4 +1,14 @@
-const db = firebase.firestore(); // ✅ used in app.js
+// ✅ Firebase reference
+const db = firebase.firestore();
+
+// ✅ Choose collection based on environment
+const COLLECTION_NAME = isTestEnv() ? "workouts_test" : "workouts";
+console.log(`📂 Using collection: ${COLLECTION_NAME}`);
+
+// ✅ Test environment detection
+function isTestEnv() {
+    return location.hostname === "localhost" || location.hostname === "127.0.0.1";
+}
 
 let currentExercises = [];
 
@@ -12,7 +22,6 @@ function addExercise() {
         return;
     }
 
-    // Add to the currentExercises array
     currentExercises.push({
         exercise: name,
         reps: parseInt(reps),
@@ -20,23 +29,22 @@ function addExercise() {
     });
     localStorage.setItem("inProgressExercises", JSON.stringify(currentExercises));
 
-    // Update the visible list
     updateExerciseList();
 
-    // Clear the input fields
     document.getElementById("exercise-name").value = "";
     document.getElementById("reps").value = "";
     document.getElementById("weight").value = "";
+    startRestTimer()
 }
+
 function updateExerciseList() {
     const list = document.getElementById("exercise-items");
-    list.innerHTML = ""; // Clear the existing list
+    list.innerHTML = "";
 
     currentExercises.forEach((ex, index) => {
         const li = document.createElement("li");
         li.textContent = `${ex.exercise} - ${ex.reps} reps @ ${ex.weight}kg`;
 
-        // Create delete button
         const deleteBtn = document.createElement("button");
         deleteBtn.textContent = "❌";
         deleteBtn.style.marginLeft = "10px";
@@ -47,22 +55,19 @@ function updateExerciseList() {
         deleteBtn.style.cursor = "pointer";
         deleteBtn.onclick = () => {
             currentExercises.splice(index, 1);
-        
-            // 🛠️ Update localStorage with new state
             if (currentExercises.length > 0) {
                 localStorage.setItem("inProgressExercises", JSON.stringify(currentExercises));
             } else {
                 localStorage.removeItem("inProgressExercises");
             }
-        
             updateExerciseList();
         };
-        
 
         li.appendChild(deleteBtn);
         list.appendChild(li);
     });
 }
+
 function saveWorkout() {
     const date = document.getElementById("workout-date").value;
 
@@ -76,7 +81,7 @@ function saveWorkout() {
         return;
     }
 
-    const id = generateId(); // 🔑 Create unique ID
+    const id = generateId();
 
     const workout = {
         id: id,
@@ -84,7 +89,6 @@ function saveWorkout() {
         exercises: currentExercises
     };
 
-    // Add to localStorage
     let workouts = JSON.parse(localStorage.getItem("workouts")) || [];
     workouts.push(workout);
     localStorage.setItem("workouts", JSON.stringify(workouts));
@@ -97,8 +101,7 @@ function saveWorkout() {
     updateExerciseList();
     alert("Workout saved successfully!");
 
-    // ✅ Upload using .doc(id).set()
-    db.collection("workouts").doc(id).set({
+    db.collection(COLLECTION_NAME).doc(id).set({
         id: id,
         date: workout.date,
         exercises: workout.exercises,
@@ -112,7 +115,6 @@ function saveWorkout() {
     updateRecentWorkouts();
 }
 
-
 function updateRecentWorkouts() {
     const list = document.getElementById("recent-workout-list");
     list.innerHTML = "";
@@ -123,22 +125,17 @@ function updateRecentWorkouts() {
     recent.forEach((workout, displayIndex) => {
         const li = document.createElement("li");
 
-        // Workout summary
         const textSpan = document.createElement("span");
         textSpan.textContent = `📅 ${formatDateDisplay(workout.date)} – ${workout.exercises.length} exercises`;
 
-
-        // View button
         const viewBtn = document.createElement("button");
         viewBtn.textContent = "👁 View";
         viewBtn.className = "recent-workout-button view-btn";
 
-        // Delete button
         const deleteBtn = document.createElement("button");
         deleteBtn.textContent = "❌ Delete";
         deleteBtn.className = "recent-workout-button delete-btn";
 
-        // Details div
         const detailsDiv = document.createElement("div");
         detailsDiv.style.marginTop = "10px";
         detailsDiv.style.display = "none";
@@ -149,27 +146,24 @@ function updateRecentWorkouts() {
             detailsDiv.appendChild(p);
         });
 
-        // View toggle logic
         viewBtn.onclick = () => {
             detailsDiv.style.display = detailsDiv.style.display === "block" ? "none" : "block";
         };
 
-        // Delete logic
         const actualIndex = workouts.length - 1 - displayIndex;
         deleteBtn.onclick = () => {
-    if (!confirm("Delete this workout?")) return;
+            if (!confirm("Delete this workout?")) return;
 
-    const deleted = workouts.splice(actualIndex, 1)[0];
-    localStorage.setItem("workouts", JSON.stringify(workouts));
-    updateRecentWorkouts();
+            const deleted = workouts.splice(actualIndex, 1)[0];
+            localStorage.setItem("workouts", JSON.stringify(workouts));
+            updateRecentWorkouts();
 
-    // 🗑️ Delete from Firebase if it has an ID
-    if (deleted?.id) {
-        db.collection("workouts").doc(deleted.id).delete()
-            .then(() => console.log(`🗑️ Deleted workout ${deleted.id} from Firebase`))
-            .catch(err => console.error(`❌ Failed to delete workout ${deleted.id}:`, err));
-    }
-};
+            if (deleted?.id) {
+                db.collection(COLLECTION_NAME).doc(deleted.id).delete()
+                    .then(() => console.log(`🗑️ Deleted workout ${deleted.id} from Firebase`))
+                    .catch(err => console.error(`❌ Failed to delete workout ${deleted.id}:`, err));
+            }
+        };
 
         li.appendChild(textSpan);
         li.appendChild(viewBtn);
@@ -178,78 +172,60 @@ function updateRecentWorkouts() {
         list.appendChild(li);
     });
 }
+
 function loadAllWorkouts() {
+    console.log("✅ loadAllWorkouts() called");
 
-    
-        console.log("✅ loadAllWorkouts() called");
-    
-        const list = document.getElementById("all-workout-list");
-        list.innerHTML = "";
-    
-        let workouts = JSON.parse(localStorage.getItem("workouts")) || [];
-    
-        // Sort by date descending (newest first)
-        workouts.sort((a, b) => new Date(b.date) - new Date(a.date));
-    
-        workouts.forEach((workout, index) => {
-            const li = document.createElement("li");
-    
-            const dateHeading = document.createElement("h3");
-            dateHeading.textContent = `📅 ${formatDateDisplay(workout.date)}`;
-            li.appendChild(dateHeading);
-    
-            workout.exercises.forEach(ex => {
-                const p = document.createElement("p");
-                p.textContent = `${ex.exercise} – ${ex.reps} reps @ ${ex.weight}kg`;
-                li.appendChild(p);
-            });
-    
-            // 🔴 Add Delete Button
-            const deleteBtn = document.createElement("button");
-            deleteBtn.textContent = "🗑 Delete Workout";
-            deleteBtn.style.marginTop = "8px";
-            deleteBtn.style.backgroundColor = "#f94b4b";
-            deleteBtn.style.color = "white";
-            deleteBtn.style.border = "none";
-            deleteBtn.style.borderRadius = "5px";
-            deleteBtn.style.padding = "6px 12px";
-            deleteBtn.style.cursor = "pointer";
-    
-            // Actual index is from reverse-sorted array
-            const actualIndex = workouts.length - 1 - index;
-    
-            deleteBtn.onclick = () => {
-    if (!confirm("Delete this workout?")) return;
+    const list = document.getElementById("all-workout-list");
+    list.innerHTML = "";
 
-    const deleted = workouts.splice(index, 1)[0];
-    localStorage.setItem("workouts", JSON.stringify(workouts));
-    loadAllWorkouts();
+    let workouts = JSON.parse(localStorage.getItem("workouts")) || [];
+    workouts.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-    if (deleted?.id) {
-        db.collection("workouts").doc(deleted.id).delete()
-            .then(() => console.log(`🗑️ Deleted workout ${deleted.id} from Firebase`))
-            .catch(err => console.error(`❌ Failed to delete workout ${deleted.id}:`, err));
-    }
-};
+    workouts.forEach((workout, index) => {
+        const li = document.createElement("li");
 
-            
-    
-            li.appendChild(deleteBtn);
-            list.appendChild(li);
-           
+        const dateHeading = document.createElement("h3");
+        dateHeading.textContent = `📅 ${formatDateDisplay(workout.date)}`;
+        li.appendChild(dateHeading);
 
+        workout.exercises.forEach(ex => {
+            const p = document.createElement("p");
+            p.textContent = `${ex.exercise} – ${ex.reps} reps @ ${ex.weight}kg`;
+            li.appendChild(p);
         });
-        
-    
-    
+
+        const deleteBtn = document.createElement("button");
+        deleteBtn.textContent = "🗑 Delete Workout";
+        deleteBtn.style.marginTop = "8px";
+        deleteBtn.style.backgroundColor = "#f94b4b";
+        deleteBtn.style.color = "white";
+        deleteBtn.style.border = "none";
+        deleteBtn.style.borderRadius = "5px";
+        deleteBtn.style.padding = "6px 12px";
+        deleteBtn.style.cursor = "pointer";
+
+        deleteBtn.onclick = () => {
+            if (!confirm("Delete this workout?")) return;
+
+            const deleted = workouts.splice(index, 1)[0];
+            localStorage.setItem("workouts", JSON.stringify(workouts));
+            loadAllWorkouts();
+
+            if (deleted?.id) {
+                db.collection(COLLECTION_NAME).doc(deleted.id).delete()
+                    .then(() => console.log(`🗑️ Deleted workout ${deleted.id} from Firebase`))
+                    .catch(err => console.error(`❌ Failed to delete workout ${deleted.id}:`, err));
+            }
+        };
+
+        li.appendChild(deleteBtn);
+        list.appendChild(li);
+    });
 }
-
-
-    
 
 function downloadWorkoutData() {
     const data = localStorage.getItem("workouts");
-
     if (!data) {
         alert("No workouts to download.");
         return;
@@ -266,6 +242,7 @@ function downloadWorkoutData() {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 }
+
 function importWorkoutData() {
     const fileInput = document.getElementById("import-file");
     const file = fileInput.files[0];
@@ -280,13 +257,11 @@ function importWorkoutData() {
     reader.onload = function (event) {
         try {
             let data = JSON.parse(event.target.result);
-
             if (!Array.isArray(data)) {
                 alert("Invalid file format. Expected an array of workouts.");
                 return;
             }
 
-            // ✅ Add missing IDs
             let updated = false;
             data.forEach(workout => {
                 if (!workout.id) {
@@ -297,14 +272,9 @@ function importWorkoutData() {
 
             localStorage.setItem("workouts", JSON.stringify(data));
             alert("✅ Workouts imported successfully!");
-
-            if (updated) {
-                console.log("🛠 Added missing IDs to imported workouts.");
-            }
-
-            loadAllWorkouts(); // refresh display
-            syncLocalWorkoutsToFirebase(); // ✅ Trigger sync after import
-
+            if (updated) console.log("🛠 Added missing IDs to imported workouts.");
+            loadAllWorkouts();
+            syncLocalWorkoutsToFirebase();
         } catch (e) {
             alert("❌ Failed to import: Invalid JSON file.");
             console.error(e);
@@ -314,62 +284,50 @@ function importWorkoutData() {
     reader.readAsText(file);
 }
 
-
-
-
 document.addEventListener("DOMContentLoaded", () => {
     const dateInput = document.getElementById("workout-date");
-    // 🛠 Auto-migrate legacy workouts that are missing an ID
-function migrateLegacyWorkoutsAddIdsOnce() {
-    if (localStorage.getItem("migratedWorkoutsWithId") === "true") {
-        return; // 🟢 Already migrated
-    }
 
-    let workouts = JSON.parse(localStorage.getItem("workouts")) || [];
-    let updated = false;
+    function migrateLegacyWorkoutsAddIdsOnce() {
+        if (localStorage.getItem("migratedWorkoutsWithId") === "true") return;
 
-    workouts.forEach(workout => {
-        if (!workout.id) {
-            workout.id = generateId();
-            updated = true;
+        let workouts = JSON.parse(localStorage.getItem("workouts")) || [];
+        let updated = false;
+
+        workouts.forEach(workout => {
+            if (!workout.id) {
+                workout.id = generateId();
+                updated = true;
+            }
+        });
+
+        if (updated) {
+            localStorage.setItem("workouts", JSON.stringify(workouts));
+            console.log(`🛠 Migrated ${workouts.length} workouts: added missing IDs.`);
         }
-    });
 
-    if (updated) {
-        localStorage.setItem("workouts", JSON.stringify(workouts));
-        console.log(`🛠 Migrated ${workouts.length} workouts: added missing IDs.`);
-    } else {
-        console.log("✅ No legacy workouts to migrate.");
+        localStorage.setItem("migratedWorkoutsWithId", "true");
     }
 
-    localStorage.setItem("migratedWorkoutsWithId", "true"); // 🔒 Mark as done
-}
+    migrateLegacyWorkoutsAddIdsOnce();
 
-// 🔁 Run on load
-migrateLegacyWorkoutsAddIdsOnce();
+    if (dateInput) {
+        const savedDate = localStorage.getItem("inProgressDate");
+        const today = new Date().toISOString().split("T")[0];
 
-if (dateInput) {
-    const savedDate = localStorage.getItem("inProgressDate");
-    const today = new Date().toISOString().split("T")[0];
+        if (savedDate === today) {
+            dateInput.value = savedDate;
+        } else {
+            dateInput.value = today;
+            localStorage.setItem("inProgressDate", today);
+            localStorage.removeItem("inProgressExercises");
+            currentExercises = [];
+            updateExerciseList();
+        }
 
-    if (savedDate === today) {
-        dateInput.value = savedDate;
-    } else {
-        dateInput.value = today;
-        localStorage.setItem("inProgressDate", today);
-
-        // 🧹 Optional reset if date has changed
-        localStorage.removeItem("inProgressExercises");
-        currentExercises = [];
-        updateExerciseList();
+        dateInput.addEventListener("input", () => {
+            localStorage.setItem("inProgressDate", dateInput.value);
+        });
     }
-
-    dateInput.addEventListener("input", () => {
-        localStorage.setItem("inProgressDate", dateInput.value);
-    });
-}
-
-   
 
     const savedExercises = JSON.parse(localStorage.getItem("inProgressExercises"));
     if (Array.isArray(savedExercises)) {
@@ -387,9 +345,6 @@ if (dateInput) {
     syncLocalWorkoutsToFirebase();
 });
 
-
-
-
 function loadPersonalRecords() {
     const prList = document.getElementById("pr-list");
     prList.innerHTML = "";
@@ -401,14 +356,14 @@ function loadPersonalRecords() {
         workout.exercises.forEach(ex => {
             const name = ex.exercise;
             const estimated1RM = ex.weight * (1 + ex.reps / 30);
-if (!prs[name] || estimated1RM > prs[name].estimated1RM) {
-    prs[name] = {
-        weight: ex.weight,
-        reps: ex.reps,
-        date: workout.date,
-        estimated1RM: estimated1RM
-    };
-}
+            if (!prs[name] || estimated1RM > prs[name].estimated1RM) {
+                prs[name] = {
+                    weight: ex.weight,
+                    reps: ex.reps,
+                    date: workout.date,
+                    estimated1RM: estimated1RM
+                };
+            }
         });
     });
 
@@ -425,22 +380,21 @@ if (!prs[name] || estimated1RM > prs[name].estimated1RM) {
 function formatDateDisplay(isoDate) {
     const [year, month, day] = isoDate.split("-");
     return `${day}-${month}-${year}`;
-
 }
+
 async function syncLocalWorkoutsToFirebase() {
     const localWorkouts = JSON.parse(localStorage.getItem("workouts")) || [];
     if (localWorkouts.length === 0) return;
 
     try {
-        const snapshot = await db.collection("workouts").get();
+        const snapshot = await db.collection(COLLECTION_NAME).get();
         const existingIds = new Set(snapshot.docs.map(doc => doc.id));
 
         for (const workout of localWorkouts) {
-            // Skip workouts without IDs (legacy)
             if (!workout.id) continue;
 
             if (!existingIds.has(workout.id)) {
-                await db.collection("workouts").doc(workout.id).set({
+                await db.collection(COLLECTION_NAME).doc(workout.id).set({
                     id: workout.id,
                     date: workout.date,
                     exercises: workout.exercises,
@@ -457,26 +411,38 @@ async function syncLocalWorkoutsToFirebase() {
 }
 
 function generateId() {
-  return '_' + Math.random().toString(36).substr(2, 9);
+    return '_' + Math.random().toString(36).substr(2, 9);
+}
+let restInterval;
+let elapsedTime = 0;
+
+function startRestTimer() {
+    clearInterval(restInterval); // reset any old timer
+    elapsedTime = 0;
+    document.getElementById("rest-timer").style.display = "block";
+    document.getElementById("timer-countup").textContent = elapsedTime;
+
+    restInterval = setInterval(() => {
+        elapsedTime++;
+        document.getElementById("timer-countup").textContent = elapsedTime;
+    }, 1000);
+}
+
+function stopRestTimer() {
+    clearInterval(restInterval);
+    document.getElementById("rest-timer").style.display = "none";
 }
 
 
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js').then(reg => {
-      reg.addEventListener('updatefound', () => {
-        const newWorker = reg.installing;
-        newWorker.addEventListener('statechange', () => {
-          if (
-            newWorker.state === 'installed' &&
-            navigator.serviceWorker.controller
-          ) {
-            // Auto-refresh for installed PWA
-            window.location.reload();
-          }
+        reg.addEventListener('updatefound', () => {
+            const newWorker = reg.installing;
+            newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    window.location.reload();
+                }
+            });
         });
-      });
     });
-  }
-  
-  
-  
+}
