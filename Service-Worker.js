@@ -1,4 +1,4 @@
-const CACHE_NAME = "workout-cache-v1.0.2"; // bump this for every update
+const CACHE_NAME = "workoutlogger-cache-v1.0.2"; // bump this for every update
 
 const urlsToCache = [
   "index.html",
