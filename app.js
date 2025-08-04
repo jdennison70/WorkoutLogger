@@ -285,6 +285,9 @@ function importWorkoutData() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+    const restStart = localStorage.getItem("restStartTime");
+if (restStart) updateRestTimer();
+
     const dateInput = document.getElementById("workout-date");
 
     function migrateLegacyWorkoutsAddIdsOnce() {
@@ -417,21 +420,35 @@ let restInterval;
 let elapsedTime = 0;
 
 function startRestTimer() {
-    clearInterval(restInterval); // reset any old timer
-    elapsedTime = 0;
-    document.getElementById("rest-timer").style.display = "block";
-    document.getElementById("timer-countup").textContent = elapsedTime;
+   
+    const startTime = Date.now();
+    localStorage.setItem("restStartTime", startTime.toString());
+    updateRestTimer();
+}
 
+function updateRestTimer() {
+    const restStart = parseInt(localStorage.getItem("restStartTime"));
+    if (!restStart) return;
+
+    document.getElementById("rest-timer").style.display = "block";
+
+    clearInterval(restInterval);
     restInterval = setInterval(() => {
-        elapsedTime++;
-        document.getElementById("timer-countup").textContent = elapsedTime;
+        const now = Date.now();
+        const elapsed = Math.floor((now - restStart) / 1000);
+        document.getElementById("timer-countup").textContent = elapsed;
     }, 1000);
 }
 
+
 function stopRestTimer() {
+  
     clearInterval(restInterval);
     document.getElementById("rest-timer").style.display = "none";
+    localStorage.removeItem("restStartTime");
 }
+
+
 
 
 if ('serviceWorker' in navigator) {
